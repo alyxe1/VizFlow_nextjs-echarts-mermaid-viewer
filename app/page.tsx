@@ -32,7 +32,8 @@ export default function Home() {
 
   useEffect(() => {
     const defaultFileName = 'liquid-cooling-supply-chain';
-    fetch(`${defaultFileName}.md`)
+    const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
+    fetch(`${basePath}/${defaultFileName}.md`)
       .then(response => response.text())
       .then(content => processMermaidContent(content, defaultFileName))
       .catch(err => {
