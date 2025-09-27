@@ -28,26 +28,30 @@ export const parseMermaidToEcharts = (mermaidCode: string): EchartsData => {
 
   const nodeData = new Map<string, { name: string; categoryIndex: number }>();
   const links: EchartsLink[] = [];
-  const categories = [
-    { name: 'Default' },
-    { name: '层级一: 液体与动力 (Fluid & Power)' },
-    { name: '层级二: 流体连接件 (Fluid Connectors)' },
-    { name: '层级三: 核心散热组件 (Core Thermal Components)' },
-    { name: '层级四: 系统集成与解决方案 (System Integration & Solutions)' },
-    { name: '层级五: 服务器与ODM整机 (Server & ODM Assembly)' },
-    { name: '层级六: 最终用户与生态核心 (End-Users & Ecosystem Core)' },
-  ];
-  const categoryIdMap: { [key: string]: number } = {
-    'A': 1, 'B': 2, 'C': 3, 'D': 4, 'E': 5, 'F': 6
-  };
+  const categories: { name: string }[] = [{ name: 'Default' }];
+  const categoryIdMap: { [key: string]: number } = {};
 
   let currentCategoryIndex = 0;
   let inFirstLevelSubgraph = false;
 
   const linkRegex = /^\s*(.+?)\s*(?:--\s*(.*?)\s*-->|-->(?:\|(.*?)\|)?)\s*(.+)\s*$/;
   const nodeDefRegex = /([^[\\\]s]+)\[([^\]]+)]/g;
-  const subgraphStartRegex = /^\s*subgraph\s+([A-Z])\[/;
+  const subgraphStartRegex = /^\s*subgraph\s+([A-Z])\[(.+)]/;
   const subgraphEndRegex = /^\s*end/;
+
+  // First pass: build categories from subgraphs
+  for (const line of lines) {
+    const trimmedLine = line.trim();
+    const subgraphMatch = trimmedLine.match(subgraphStartRegex);
+    if (subgraphMatch) {
+      const catId = subgraphMatch[1];
+      const catName = subgraphMatch[2];
+      if (!categoryIdMap[catId]) {
+        categories.push({ name: catName });
+        categoryIdMap[catId] = categories.length - 1;
+      }
+    }
+  }
 
   // Pre-scan for all labeled nodes
   for (const line of lines) {
