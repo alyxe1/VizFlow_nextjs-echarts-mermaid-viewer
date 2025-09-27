@@ -52,6 +52,8 @@ export const parseMermaidToEcharts = (mermaidCode: string): EchartsData => {
   // Pre-scan for all labeled nodes
   for (const line of lines) {
     const trimmedLine = line.trim();
+    if (trimmedLine.startsWith('subgraph')) continue; // Skip subgraph definitions
+
     let defMatch;
     nodeDefRegex.lastIndex = 0;
     while ((defMatch = nodeDefRegex.exec(trimmedLine)) !== null) {
